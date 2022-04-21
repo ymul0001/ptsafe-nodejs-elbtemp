@@ -1,0 +1,21 @@
+{
+  "name": "ptsafe-backend",
+  "version": "1.0.0",
+  "description": "This package is created to support the backend of the PTsafe app for FIT5120 Capstone Project",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yonas Mulyadi",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.15",
+    "uuid": "^8.3.2"
+  }
+}
