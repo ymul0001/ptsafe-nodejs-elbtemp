@@ -22,6 +22,23 @@ const listStopsBasedOnRouteId = (routeId) => {
                                  ORDER BY T1.route_id) AND r.route_id =  '${routeId}';`)
 }
 
+const listNearestStopsFromCurrLocation = (lat, long) => {
+    return mysqlService.execute(`SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday, T1.total_police_station,
+                                111.111 *
+                                    DEGREES(ACOS(LEAST(1.0, COS(RADIANS(s.stop_lat))
+                                        * COS(RADIANS(${lat}))
+                                        * COS(RADIANS(s.stop_lon - ${long}))
+                                        + SIN(RADIANS(s.stop_lat))
+                                        * SIN(RADIANS(${lat}))))) AS distance_in_km
+                                FROM stops s JOIN patronage p ON s.stop_id = p.stop_patronage_id
+                                JOIN (SELECT s.stop_id, s.stop_name, COALESCE(COUNT(*),0) AS total_police_station FROM stops s
+                                LEFT JOIN police_stop ps ON s.stop_id = ps.stopid
+                                GROUP BY s.stop_name) T1 ON T1.stop_id = s.stop_id
+                                WHERE p.year = 2020
+                                ORDER BY distance_in_km, pax_weekday, total_police_station DESC
+                                LIMIT 3;`)
+}
+
 const listDepartureTimeBasedOnDirectionRouteIdAndStopId = (directionId, routeId, stopId) => {
     return mysqlService.execute(`SELECT DISTINCT r.route_id, st.stop_id, st.departure_time
                                 FROM routes r JOIN trips tr ON r.route_id = tr.route_id
@@ -76,5 +93,6 @@ module.exports = {
     listRoutesBasedOnDestType,
     listStopsBasedOnRouteId,
     listDepartureTimeBasedOnDirectionRouteIdAndStopId,
-    listAllRoutesBasedOnStopDirectionAndCurrLocation
+    listAllRoutesBasedOnStopDirectionAndCurrLocation,
+    listNearestStopsFromCurrLocation
 }
