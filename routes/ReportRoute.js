@@ -9,6 +9,7 @@ const ListAllRoutesBasedOnStopDirectionAndCurrLocationController = require('../c
 const ListNearestStopsFromCurrLocationController = require('../controllers/ReportController/ListNearestStopsFromCurrLocationController');
 const ListCarriagesByDayRouteStopDepartureTimeController = require('../controllers/ReportController/ListCarriagesByDayRouteStopDepartureTimeController');
 const ListCriminalActivitiesForEachCarriageController = require('../controllers/ReportController/ListCriminalActivitiesForEachCarriageController');
+const CreateCrowdednessController = require('../controllers/ReportController/CreateCrowdednessController');
 
 router.get(`/findStopsByRouteId`, ListStopsBasedOnRouteIdController.findStopsBasedOnRouteId);
 router.get(`/findRoutesByDestType`, ListRoutesBasedOnDestTypeController.findRoutesBasedOnDestType);
@@ -17,5 +18,6 @@ router.get(`/findRoutesByStopIdDirectionCurrLocation`, ListAllRoutesBasedOnStopD
 router.get(`/findNearestStopsByCurrLocation`, ListNearestStopsFromCurrLocationController.findNearestStopsFromCurrLocation);
 router.get(`/findCarriagesByDayRouteStopDepartureTime`, ListCarriagesByDayRouteStopDepartureTimeController.findCarriagesByDayRouteStopDepartureTime);
 router.get(`/findCriminalActivitiesByCarriageNumber`, ListCriminalActivitiesForEachCarriageController.findCriminalActivitiesForEachCarriage);
+router.post(`/create`, CreateCrowdednessController.create);
 
 module.exports = router;

@@ -118,6 +118,10 @@ const listCriminalActivitiesForEachCarriage = (carriageNumber, day, routeId, sto
                                 WHERE criminal_activity != 'none' AND carriage_number = ${carriageNumber} AND day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}';`)
 }
 
+const reportCrowdedness = (params) => {
+    return mysqlService.execute(`INSERT INTO crowdedness (crowdness_id, crowd_stop_id, crowd_route_id, departure_time, direction_id, day, carriage_number, crowdness_level, criminal_activity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, params)
+}
+
 
 module.exports = {
     listRoutesBasedOnDestType,
@@ -126,5 +130,6 @@ module.exports = {
     listAllRoutesBasedOnStopDirectionAndCurrLocation,
     listNearestStopsFromCurrLocation,
     listCarriagesByDayRouteStopDepartureTime,
-    listCriminalActivitiesForEachCarriage
+    listCriminalActivitiesForEachCarriage,
+    reportCrowdedness
 }
