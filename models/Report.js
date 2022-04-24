@@ -86,7 +86,37 @@ const listAllRoutesBasedOnStopDirectionAndCurrLocation = (stopId, directionId, l
                                 WHERE T2.ranking = 1)) T4 ON T3.route_id = T4.route_id;`)
 }
 
+const listCarriagesByDayRouteStopDepartureTime = (day, routeId, stopId, departureTime) => {
+    return mysqlService.execute(`SELECT T1.carriage_number, COALESCE(T2.average_crowdness_level, -1) AS average_crowdness_level FROM (
+                                SELECT 1 AS carriage_number
+                                UNION 
+                                SELECT 2 AS carriage_number
+                                UNION 
+                                SELECT 3 AS carriage_number
+                                UNION 
+                                SELECT 4 AS carriage_number
+                                UNION 
+                                SELECT 5 AS carriage_number
+                                UNION 
+                                SELECT 6 AS carriage_number
+                                UNION 
+                                SELECT 7 AS carriage_number
+                                UNION 
+                                SELECT 8 AS carriage_number
+                                UNION 
+                                SELECT 9 AS carriage_number
+                                UNION 
+                                SELECT 10 AS carriage_number) T1
+                                LEFT JOIN
+                                (SELECT carriage_number, ROUND(AVG(crowdness_level),2) AS average_crowdness_level FROM crowdedness
+                                WHERE day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}'
+                                GROUP BY carriage_number) T2 ON T1.carriage_number = T2.carriage_number;`)
+}
 
+const listCriminalActivitiesForEachCarriage = (carriageNumber, day, routeId, stopId, departureTime) => {
+    return mysqlService.execute(`SELECT criminal_activity FROM crowdedness
+                                WHERE criminal_activity != 'none' AND carriage_number = ${carriageNumber} AND day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}';`)
+}
 
 
 module.exports = {
@@ -94,5 +124,7 @@ module.exports = {
     listStopsBasedOnRouteId,
     listDepartureTimeBasedOnDirectionRouteIdAndStopId,
     listAllRoutesBasedOnStopDirectionAndCurrLocation,
-    listNearestStopsFromCurrLocation
+    listNearestStopsFromCurrLocation,
+    listCarriagesByDayRouteStopDepartureTime,
+    listCriminalActivitiesForEachCarriage
 }
