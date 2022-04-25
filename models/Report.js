@@ -118,9 +118,24 @@ const listCriminalActivitiesForEachCarriage = (carriageNumber, day, routeId, sto
                                 WHERE criminal_activity != 'none' AND carriage_number = ${carriageNumber} AND day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}';`)
 }
 
+const listAllTripWishlist = () => {
+    return mysqlService.execute(`SELECT * FROM trip_wishlist;`);
+}
+
 const reportCrowdedness = (params) => {
     return mysqlService.execute(`INSERT INTO crowdedness (crowdness_id, crowd_stop_id, crowd_route_id, departure_time, direction_id, day, carriage_number, crowdness_level, criminal_activity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, params)
 }
+
+const addTripWishlist = (params) => {
+    return mysqlService.execute(`INSERT INTO trip_wishlist (wishlist_id, source_name, destination_name, stop_id, route_id, departure_time, carriage_number) VALUES (?, ?, ?, ?, ?, ?, ?)`, params)
+}
+
+const deleteTripWishlistById = (wishlistId) => {
+    return mysqlService.execute(`DELETE FROM trip_wishlist WHERE wishlist_id = '${wishlistId}';`)
+}
+
+
+
 
 
 module.exports = {
@@ -130,6 +145,9 @@ module.exports = {
     listAllRoutesBasedOnStopDirectionAndCurrLocation,
     listNearestStopsFromCurrLocation,
     listCarriagesByDayRouteStopDepartureTime,
+    listAllTripWishlist,
     listCriminalActivitiesForEachCarriage,
-    reportCrowdedness
+    reportCrowdedness,
+    addTripWishlist,
+    deleteTripWishlistById
 }
