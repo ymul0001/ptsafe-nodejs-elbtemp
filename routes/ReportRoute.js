@@ -9,7 +9,10 @@ const ListAllRoutesBasedOnStopDirectionAndCurrLocationController = require('../c
 const ListNearestStopsFromCurrLocationController = require('../controllers/ReportController/ListNearestStopsFromCurrLocationController');
 const ListCarriagesByDayRouteStopDepartureTimeController = require('../controllers/ReportController/ListCarriagesByDayRouteStopDepartureTimeController');
 const ListCriminalActivitiesForEachCarriageController = require('../controllers/ReportController/ListCriminalActivitiesForEachCarriageController');
+const ListAllTripWishlistController = require('../controllers/ReportController/ListAllTripWishlistController');
 const CreateCrowdednessController = require('../controllers/ReportController/CreateCrowdednessController');
+const CreateTripWishlistController = require('../controllers/ReportController/AddTripWishlistController');
+const DeleteTripWishlistByIdController = require('../controllers/ReportController/DeleteTripWishlistByIdController');
 
 router.get(`/findStopsByRouteId`, ListStopsBasedOnRouteIdController.findStopsBasedOnRouteId);
 router.get(`/findRoutesByDestType`, ListRoutesBasedOnDestTypeController.findRoutesBasedOnDestType);
@@ -18,6 +21,9 @@ router.get(`/findRoutesByStopIdDirectionCurrLocation`, ListAllRoutesBasedOnStopD
 router.get(`/findNearestStopsByCurrLocation`, ListNearestStopsFromCurrLocationController.findNearestStopsFromCurrLocation);
 router.get(`/findCarriagesByDayRouteStopDepartureTime`, ListCarriagesByDayRouteStopDepartureTimeController.findCarriagesByDayRouteStopDepartureTime);
 router.get(`/findCriminalActivitiesByCarriageNumber`, ListCriminalActivitiesForEachCarriageController.findCriminalActivitiesForEachCarriage);
+router.get(`/findAllTripWishlist`, ListAllTripWishlistController.findAllTripWishlists);
 router.post(`/create`, CreateCrowdednessController.create);
+router.post(`/createTripWishlist`, CreateTripWishlistController.create);
+router.delete(`/deleteTripWishlistById`, DeleteTripWishlistByIdController.deleteTripWishlistById);
 
 module.exports = router;
