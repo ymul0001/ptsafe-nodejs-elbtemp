@@ -119,7 +119,9 @@ const listCriminalActivitiesForEachCarriage = (carriageNumber, day, routeId, sto
 }
 
 const listAllTripWishlist = () => {
-    return mysqlService.execute(`SELECT * FROM trip_wishlist;`);
+    return mysqlService.execute(`SELECT tw.wishlist_id, tw.source_name, tw.destination_name, s.stop_name, r.route_long_name, tw.departure_time, tw.carriage_number FROM trip_wishlist tw
+                                JOIN stops s ON s.stop_id = tw.stop_id
+                                JOIN routes r ON r.route_id = tw.route_id;`);
 }
 
 const reportCrowdedness = (params) => {
