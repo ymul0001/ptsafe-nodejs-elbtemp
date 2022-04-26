@@ -12,7 +12,7 @@ const listRoutesBasedOnDestType = (directionId) => {
 }
 
 const listStopsBasedOnRouteId = (routeId) => {
-    return mysqlService.execute(`SELECT DISTINCT r.route_id, s.stop_id, s.stop_name
+    return mysqlService.execute(`SELECT DISTINCT r.route_id, s.stop_id, s.stop_name, s.stop_lat, s.stop_lon
                                  FROM routes r JOIN trips tr ON r.route_id = tr.route_id
                                  JOIN stop_times st ON tr.trip_id = st.trip_id
                                  JOIN stops s ON st.stop_id = s.stop_id
