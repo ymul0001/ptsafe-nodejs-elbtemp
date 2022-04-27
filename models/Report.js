@@ -23,7 +23,8 @@ const listStopsBasedOnRouteId = (routeId) => {
 }
 
 const listNearestStopsFromCurrLocation = (lat, long) => {
-    return mysqlService.execute(`SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday, T1.total_police_station,
+    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station FROM
+                                (SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday / p.platform_count AS crowdedness_density, T1.total_police_station,
                                 111.111 *
                                     DEGREES(ACOS(LEAST(1.0, COS(RADIANS(s.stop_lat))
                                         * COS(RADIANS(${lat}))
@@ -35,7 +36,8 @@ const listNearestStopsFromCurrLocation = (lat, long) => {
                                 LEFT JOIN police_stop ps ON s.stop_id = ps.stopid
                                 GROUP BY s.stop_name) T1 ON T1.stop_id = s.stop_id
                                 WHERE p.year = 2020
-                                ORDER BY distance_in_km, pax_weekday, total_police_station DESC
+                                ORDER BY distance_in_km LIMIT 3) T2
+                                ORDER BY T2.crowdedness_density
                                 LIMIT 3;`)
 }
 
