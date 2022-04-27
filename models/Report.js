@@ -23,7 +23,7 @@ const listStopsBasedOnRouteId = (routeId) => {
 }
 
 const listNearestStopsFromCurrLocation = (lat, long) => {
-    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station FROM
+    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station, T2.distance_in_km FROM
                                 (SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday / p.platform_count AS crowdedness_density, T1.total_police_station,
                                 111.111 *
                                     DEGREES(ACOS(LEAST(1.0, COS(RADIANS(s.stop_lat))
