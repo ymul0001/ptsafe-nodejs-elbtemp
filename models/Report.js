@@ -126,6 +126,18 @@ const listAllTripWishlist = () => {
                                 JOIN routes r ON r.route_id = tw.route_id;`);
 }
 
+const listAllPaxForEachStopId = (stopId) => {
+    return mysqlService.execute(`select year, stop_patronage_id, ROUND(pax_pre_AM_peak/platform_count,0) AS density_pre_am_peak, ROUND(pax_AM_peak/platform_count,0) AS density_am_peak, ROUND(pax_interpeak/platform_count,0) AS density_interpeak, ROUND(pax_PM_peak/platform_count,0) AS density_pm_peak, ROUND(pax_PM_late/platform_count,0) AS density_late_pm
+                                from patronage
+                                where stop_patronage_id = ${stopId};`)
+} 
+
+const getRecentStopRankBasedOnStopId = (stopId) => {
+    return mysqlService.execute(`select t.stop_patronage_id,t.sax_annual,t.patronage_rank from
+                                (select *, rank() over (order by sax_annual DESC) as patronage_rank from patronage where year = 2020) t
+                                where t.stop_patronage_id = ${stopId};`)
+}
+
 const reportCrowdedness = (params) => {
     return mysqlService.execute(`INSERT INTO crowdedness (crowdness_id, crowd_stop_id, crowd_route_id, departure_time, direction_id, day, carriage_number, crowdness_level, criminal_activity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, params)
 }
@@ -139,9 +151,6 @@ const deleteTripWishlistById = (wishlistId) => {
 }
 
 
-
-
-
 module.exports = {
     listRoutesBasedOnDestType,
     listStopsBasedOnRouteId,
@@ -151,6 +160,8 @@ module.exports = {
     listCarriagesByDayRouteStopDepartureTime,
     listAllTripWishlist,
     listCriminalActivitiesForEachCarriage,
+    listAllPaxForEachStopId,
+    getRecentStopRankBasedOnStopId,
     reportCrowdedness,
     addTripWishlist,
     deleteTripWishlistById
