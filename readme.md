@@ -29,9 +29,9 @@ The object detection back-end is built with a python API framework called Flask.
 
 ## 3. Tech/framework used
 - [NodeJS/Express](https://nodejs.org/en/)
-- [Flask](https://flask.palletsprojects.com/en/2.1.x/)
 - [Amazon Web Service RDS](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=categories%23compute&trk=5136fcc7-fda9-45d9-a722-6e7f07f8bafa&sc_channel=ps&sc_campaign=acquisition&sc_medium=ACQ-P|PS-GO|Brand|Desktop|SU|Compute|Solution|ANZ|EN|Text&s_kwcid=AL!4422!3!476956951563!e!!g!!amazon%20cloud&ef_id=CjwKCAjwur-SBhB6EiwA5sKtjnj-Ukje4j4Uso-xqKajmwpbQWAeCRleLzkzYDyTfaKsVq7M6z3V2BoCiQYQAvD_BwE:G:s&s_kwcid=AL!4422!3!476956951563!e!!g!!amazon%20cloud)
-- [Heroku](https://id.heroku.com/login)
+- [AWS Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)
+- [AWS CodePipeline](https://aws.amazon.com/codepipeline/)
 - [Postman](https://www.postman.com/)
 
 ## 4. Libraries/package involved:
@@ -55,17 +55,29 @@ The object detection back-end is built with a python API framework called Flask.
 ## 5. List of endpoints and functionalities
 | Endpoint | Request Method  | Request param  | Request body | functionalities
 | :---:   | :-: | :-: | :-: | :-: |
-| https://ptsafe-backend.herokuapp.com/v1/credential/findByUserNameAndPassword| GET | username,password | none | To login as administrator if necessary (will be enabled prior to the expo)
-| https://ptsafe-backend.herokuapp.com/v1/news/findAll| GET | none | none | Get all tech and crime news
-| https://ptsafe-backend.herokuapp.com/v1/news/findByNewsLabel| GET | newslabel | none | Get all news based on a news label
-| https://ptsafe-backend.herokuapp.com/v1/credential/findByUserNameAndPassword| GET | username,password | none | To login as administrator if necessary (will be enabled prior to the expo)
-| https://ptsafe-backend.herokuapp.com/v1/news/create| POST | none | newstitle, newslabel, newscontent, imageurl, newsurl | Create a new news
-| https://ptsafe-backend.herokuapp.com/v1/comment/create| POST | none | newsid, commenttitle, commentcontent | Create a new comment for a specific news
-| https://ptsafe-backend.herokuapp.com/v1/comment/findByNewsId| GET | newsid | none | Get comments for a specific news id
-| https://ptsafe-object-detection-api.herokuapp.com/v1/predict| POST | none | file (.jpg, .png) | Get prediction of how many people in the picture
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/credential/findByUserNameAndPassword| GET | username,password | none | To login as administrator if necessary
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/news/findAll | GET | none | none | Get all tech and crime news
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/news/findByNewsLabel| GET | newslabel | none | Get all news based on a news label
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/news/create| POST | none | newstitle, newslabel, newscontent, imageurl, newsurl | Create a new news
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/comment/create| POST | none | newsid, commenttitle, commentcontent | Create a new comment for a specific news
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/comment/findByNewsId| GET | newsid | none | Get comments for a specific news id
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/emergency/findAll| GET | none | none | Find all emergency numbers
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/createTripWishlist| POST | none | sourcename, destinationname, stopid, routeid, departuretime,carriagenumber | Create trip wishlist
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/create | POST | none | firection, day, carriagenumber, crowdednesslevel, criminalactivity | Allow the user to report the crowdedness in a carriage
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findRoutesByStopIdDirectionCurrLocation| GET | stopid, directiontype, lat, long | none | Get all routes via stop id, direction type, and current coordinates
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findDepartureTimesByDirectionRouteIdStopId| GET | directiontype, routeid, stopid | none | Get departure times by direction type, route id and stop id for reporting purpose 
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findRoutesByDestType| GET | destinationtype | none | Get all routes based on the destination type (inbound/outbound)
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findStopsByRouteId| GET | routeid | none | Get all stops filtered by route id
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findNearestStopsByCurrLocation| GET | lat, long | none | Get all stations near to the user's current location
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findCarriagesByDayRouteStopDepartureTime| GET | day, routeid, stopid, departuretime | none | Get carriages by day, routeid, stopid and departuretime
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findCriminalActivitiesByCarriageNumber| GET | carriagenumber, day, routeid, stopid, departuretime | none | Get all criminal activites by carriage number
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/deleteTripWishlistById| DELETE | wishlistid | none | delete a wishlist corresponding to a wishlistid
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findAllTripWishlist| GET | none | none | Get all trip wishlists
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findRecentStopRankByStopId| GET | stopid | none | Get historical crowdedness rank for a stop based on stop id
+| http://ptsafenodejsapi-env.eba-cx9pgkwu.us-east-1.elasticbeanstalk.com/v1/report/findAllPaxForEachStopId| GET | stopid | none | Get historical pax data for each stop based on a stop id
 
-## 6. System architecture diagram
-<img src="https://ptsafe-readme-images.s3.ap-southeast-1.amazonaws.com/system-architecture.JPG" alt="PTSafe logo" title="PTSafe"  height="800" />
+6. System architecture diagram
+<img src="https://ptsafe-readme-images.s3.ap-southeast-1.amazonaws.com/onboarding-mvc.jpeg" alt="PTSafe logo" title="PTSafe"  height="800" />
 
 ## 7. Installation
 ### 7.1. Node-Express API
@@ -78,16 +90,10 @@ Some steps are required to run this application locally on your computer machine
 - Run `npm install`
 - Run this code to install all dependencies `npm install cors nodemon body-parser express mysql2 dotenv uuid` 
 
-
-### 7.2. Flask API
-Some required steps are as follows (assumed you already have your python):
-- run `python3 -m pip install --upgrade pip` to upgrade the pip package installer
-- Install Flask
-- Navigate to the flask folder and run the app.py
-
 ## 8. Active development branch
-- master (will be merged with the iteration-1 branch after Industry Mentors meeting)
+- master (will be merged with the iteration-2 branch after Industry Mentors meeting)
 - iteration-1 (with subbranches under this main branch)
+- iteration-2 (with subbranches under this main branch)
 
 
 
