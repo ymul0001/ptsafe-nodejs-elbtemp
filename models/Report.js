@@ -12,7 +12,7 @@ const listRoutesBasedOnDestType = (directionId) => {
 }
 
 const listStopsBasedOnRouteId = (routeId) => {
-    return mysqlService.execute(`SELECT DISTINCT r.route_id, s.stop_id, s.stop_name
+    return mysqlService.execute(`SELECT DISTINCT r.route_id, s.stop_id, s.stop_name, s.stop_lat, s.stop_lon
                                  FROM routes r JOIN trips tr ON r.route_id = tr.route_id
                                  JOIN stop_times st ON tr.trip_id = st.trip_id
                                  JOIN stops s ON st.stop_id = s.stop_id
@@ -20,6 +20,25 @@ const listStopsBasedOnRouteId = (routeId) => {
                                  (SELECT route_id, route_short_name, RANK() OVER (PARTITION BY route_short_name ORDER BY route_id ASC) route_rank
                                  FROM routes) T1 WHERE T1.route_rank = 1
                                  ORDER BY T1.route_id) AND r.route_id =  '${routeId}';`)
+}
+
+const listNearestStopsFromCurrLocation = (lat, long) => {
+    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station, T2.distance_in_km FROM
+                                (SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday / p.platform_count AS crowdedness_density, T1.total_police_station,
+                                111.111 *
+                                    DEGREES(ACOS(LEAST(1.0, COS(RADIANS(s.stop_lat))
+                                        * COS(RADIANS(${lat}))
+                                        * COS(RADIANS(s.stop_lon - ${long}))
+                                        + SIN(RADIANS(s.stop_lat))
+                                        * SIN(RADIANS(${lat}))))) AS distance_in_km
+                                FROM stops s JOIN patronage p ON s.stop_id = p.stop_patronage_id
+                                JOIN (SELECT s.stop_id, s.stop_name, COALESCE(COUNT(*),0) AS total_police_station FROM stops s
+                                LEFT JOIN police_stop ps ON s.stop_id = ps.stopid
+                                GROUP BY s.stop_name) T1 ON T1.stop_id = s.stop_id
+                                WHERE p.year = 2020
+                                ORDER BY distance_in_km LIMIT 3) T2
+                                ORDER BY T2.crowdedness_density
+                                LIMIT 3;`)
 }
 
 const listDepartureTimeBasedOnDirectionRouteIdAndStopId = (directionId, routeId, stopId) => {
@@ -69,12 +88,81 @@ const listAllRoutesBasedOnStopDirectionAndCurrLocation = (stopId, directionId, l
                                 WHERE T2.ranking = 1)) T4 ON T3.route_id = T4.route_id;`)
 }
 
+const listCarriagesByDayRouteStopDepartureTime = (day, routeId, stopId, departureTime) => {
+    return mysqlService.execute(`SELECT T1.carriage_number, COALESCE(T2.average_crowdness_level, -1) AS average_crowdness_level FROM (
+                                SELECT 1 AS carriage_number
+                                UNION 
+                                SELECT 2 AS carriage_number
+                                UNION 
+                                SELECT 3 AS carriage_number
+                                UNION 
+                                SELECT 4 AS carriage_number
+                                UNION 
+                                SELECT 5 AS carriage_number
+                                UNION 
+                                SELECT 6 AS carriage_number
+                                UNION 
+                                SELECT 7 AS carriage_number
+                                UNION 
+                                SELECT 8 AS carriage_number
+                                UNION 
+                                SELECT 9 AS carriage_number
+                                UNION 
+                                SELECT 10 AS carriage_number) T1
+                                LEFT JOIN
+                                (SELECT carriage_number, ROUND(AVG(crowdness_level),2) AS average_crowdness_level FROM crowdedness
+                                WHERE day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}'
+                                GROUP BY carriage_number) T2 ON T1.carriage_number = T2.carriage_number;`)
+}
 
+const listCriminalActivitiesForEachCarriage = (carriageNumber, day, routeId, stopId, departureTime) => {
+    return mysqlService.execute(`SELECT criminal_activity FROM crowdedness
+                                WHERE criminal_activity != 'none' AND carriage_number = ${carriageNumber} AND day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}';`)
+}
+
+const listAllTripWishlist = () => {
+    return mysqlService.execute(`SELECT tw.wishlist_id, tw.source_name, tw.destination_name, s.stop_name, r.route_long_name, tw.departure_time, tw.carriage_number FROM trip_wishlist tw
+                                JOIN stops s ON s.stop_id = tw.stop_id
+                                JOIN routes r ON r.route_id = tw.route_id;`);
+}
+
+const listAllPaxForEachStopId = (stopId) => {
+    return mysqlService.execute(`select year, stop_patronage_id, ROUND(pax_pre_AM_peak/platform_count,0) AS density_pre_am_peak, ROUND(pax_AM_peak/platform_count,0) AS density_am_peak, ROUND(pax_interpeak/platform_count,0) AS density_interpeak, ROUND(pax_PM_peak/platform_count,0) AS density_pm_peak, ROUND(pax_PM_late/platform_count,0) AS density_late_pm
+                                from patronage
+                                where stop_patronage_id = ${stopId};`)
+} 
+
+const getRecentStopRankBasedOnStopId = (stopId) => {
+    return mysqlService.execute(`select t.stop_patronage_id,t.sax_annual,t.patronage_rank from
+                                (select *, rank() over (order by sax_annual DESC) as patronage_rank from patronage where year = 2020) t
+                                where t.stop_patronage_id = ${stopId};`)
+}
+
+const reportCrowdedness = (params) => {
+    return mysqlService.execute(`INSERT INTO crowdedness (crowdness_id, crowd_stop_id, crowd_route_id, departure_time, direction_id, day, carriage_number, crowdness_level, criminal_activity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, params)
+}
+
+const addTripWishlist = (params) => {
+    return mysqlService.execute(`INSERT INTO trip_wishlist (wishlist_id, source_name, destination_name, stop_id, route_id, departure_time, carriage_number) VALUES (?, ?, ?, ?, ?, ?, ?)`, params)
+}
+
+const deleteTripWishlistById = (wishlistId) => {
+    return mysqlService.execute(`DELETE FROM trip_wishlist WHERE wishlist_id = '${wishlistId}';`)
+}
 
 
 module.exports = {
     listRoutesBasedOnDestType,
     listStopsBasedOnRouteId,
     listDepartureTimeBasedOnDirectionRouteIdAndStopId,
-    listAllRoutesBasedOnStopDirectionAndCurrLocation
+    listAllRoutesBasedOnStopDirectionAndCurrLocation,
+    listNearestStopsFromCurrLocation,
+    listCarriagesByDayRouteStopDepartureTime,
+    listAllTripWishlist,
+    listCriminalActivitiesForEachCarriage,
+    listAllPaxForEachStopId,
+    getRecentStopRankBasedOnStopId,
+    reportCrowdedness,
+    addTripWishlist,
+    deleteTripWishlistById
 }

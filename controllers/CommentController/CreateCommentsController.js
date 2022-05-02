@@ -16,13 +16,13 @@ const create = async (req,res) => {
     if (!StringUtils.isNullOrEmpty(newsId) && !StringUtils.isNullOrEmpty(commentTitle) && !StringUtils.isNullOrEmpty(commentContent)) {
         const commentData = [commentId, newsId, commentTitle, commentContent];
         await createComments(commentData, res);
-        return Response.returnResponse(res, StatusCode.status.CREATED, `comment record has been successfully created.`);
     }
 }
 
 const createComments = async (commentData, res) => {
     try {
         await Comment.createComments(commentData);
+        return Response.returnResponse(res, StatusCode.status.CREATED, `comment record has been successfully created.`);
     }
     catch (e) {
         return Response.returnResponse(res, StatusCode.status.CONFLICT, `Encounter an error when creating comments data. ${e}.`);

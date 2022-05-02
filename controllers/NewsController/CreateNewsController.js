@@ -17,13 +17,13 @@ const create = async (req,res) => {
     if (!StringUtils.isNullOrEmpty(newsTitle) && !StringUtils.isNullOrEmpty(newsLabel) && !StringUtils.isNullOrEmpty(newsContent) && !StringUtils.isNullOrEmpty(imageUrl) && !StringUtils.isNullOrEmpty(newsUrl)) {
         const newsData = [newsId, newsTitle, newsLabel, newsContent, imageUrl, newsUrl];
         await createNews(newsData, res);
-        return Response.returnResponse(res, StatusCode.status.CREATED, `news record has been successfully created.`);
     }
 }
 
 const createNews = async (newsData, res) => {
     try {
         await News.createNews(newsData);
+        return Response.returnResponse(res, StatusCode.status.CREATED, `news record has been successfully created.`);
     }
     catch (e) {
         return Response.returnResponse(res, StatusCode.status.CONFLICT, `Encounter an error when creating news data. ${e}.`);
