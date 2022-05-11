@@ -10,6 +10,7 @@ const ListNearestStopsFromCurrLocationController = require('../controllers/Repor
 const ListCarriagesByDayRouteStopDepartureTimeController = require('../controllers/ReportController/ListCarriagesByDayRouteStopDepartureTimeController');
 const ListCriminalActivitiesForEachCarriageController = require('../controllers/ReportController/ListCriminalActivitiesForEachCarriageController');
 const ListAllTripWishlistController = require('../controllers/ReportController/ListAllTripWishlistController');
+const ListDistinctRoutesForFilterController = require('../controllers/ReportController/ListDistinctRoutesForFilterController');
 const GetRecentStopRankBasedOnStopIdController = require('../controllers/ReportController/GetRecentStopRankBasedOnStopIdController');
 const ListAllPaxForEachStopIdController = require('../controllers/ReportController/ListAllPaxForEachStopIdController');
 const CreateCrowdednessController = require('../controllers/ReportController/CreateCrowdednessController');
@@ -24,6 +25,7 @@ router.get(`/findNearestStopsByCurrLocation`, ListNearestStopsFromCurrLocationCo
 router.get(`/findCarriagesByDayRouteStopDepartureTime`, ListCarriagesByDayRouteStopDepartureTimeController.findCarriagesByDayRouteStopDepartureTime);
 router.get(`/findCriminalActivitiesByCarriageNumber`, ListCriminalActivitiesForEachCarriageController.findCriminalActivitiesForEachCarriage);
 router.get(`/findAllTripWishlist`, ListAllTripWishlistController.findAllTripWishlists);
+router.get(`/findDistinctRoutes`, ListDistinctRoutesForFilterController.findDistinctRoutes);
 router.get(`/findRecentStopRankByStopId`, GetRecentStopRankBasedOnStopIdController.findRecentStopRankBasedOnStopId);
 router.get(`/findAllPaxForEachStopId`, ListAllPaxForEachStopIdController.findAllPaxForEachStopId);
 router.post(`/create`, CreateCrowdednessController.create);
