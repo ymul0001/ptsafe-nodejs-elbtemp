@@ -112,7 +112,8 @@ const listCarriagesByDayRouteStopDepartureTime = (day, routeId, stopId, departur
                                 LEFT JOIN
                                 (SELECT carriage_number, ROUND(AVG(crowdness_level),2) AS average_crowdness_level FROM crowdedness
                                 WHERE day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}'
-                                GROUP BY carriage_number) T2 ON T1.carriage_number = T2.carriage_number;`)
+                                GROUP BY carriage_number) T2 ON T1.carriage_number = T2.carriage_number
+                                ORDER BY average_crowdness_level ASC;`)
 }
 
 const listDistinctRoutesForFilter = (stopId, directionId, lat, long) => {
