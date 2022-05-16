@@ -23,8 +23,8 @@ const listStopsBasedOnRouteId = (routeId) => {
 }
 
 const listNearestStopsFromCurrLocation = (lat, long) => {
-    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station, T2.distance_in_km FROM
-                                (SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday / p.platform_count AS crowdedness_density, T1.total_police_station,
+    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station, T2.crime_rate_index, T2.distance_in_km FROM
+                                (SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday / p.platform_count AS crowdedness_density, T1.total_police_station, T1.crime_rate_index,
                                 111.111 *
                                     DEGREES(ACOS(LEAST(1.0, COS(RADIANS(s.stop_lat))
                                         * COS(RADIANS(${lat}))
@@ -32,7 +32,7 @@ const listNearestStopsFromCurrLocation = (lat, long) => {
                                         + SIN(RADIANS(s.stop_lat))
                                         * SIN(RADIANS(${lat}))))) AS distance_in_km
                                 FROM stops s JOIN patronage p ON s.stop_id = p.stop_patronage_id
-                                JOIN (SELECT s.stop_id, s.stop_name, COALESCE(COUNT(*),0) AS total_police_station FROM stops s
+                                JOIN (SELECT s.stop_id, s.stop_name, COALESCE(COUNT(*),0) AS total_police_station, COALESCE(s.crime_rate_index,0) AS crime_rate_index FROM stops s
                                 LEFT JOIN police_stop ps ON s.stop_id = ps.stopid
                                 GROUP BY s.stop_name) T1 ON T1.stop_id = s.stop_id
                                 WHERE p.year = 2020
