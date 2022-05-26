@@ -23,8 +23,8 @@ const listStopsBasedOnRouteId = (routeId) => {
 }
 
 const listNearestStopsFromCurrLocation = (lat, long) => {
-    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station, T2.distance_in_km FROM
-                                (SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday / p.platform_count AS crowdedness_density, T1.total_police_station,
+    return mysqlService.execute(`SELECT T2.stop_id, T2.stop_name, T2.stop_lat, T2.stop_lon, T2.crowdedness_density, T2.total_police_station, T2.crime_rate_index, T2.distance_in_km FROM
+                                (SELECT s.stop_id, s.stop_name, s.stop_lat, s.stop_lon, p.pax_weekday / p.platform_count AS crowdedness_density, T1.total_police_station, T1.crime_rate_index,
                                 111.111 *
                                     DEGREES(ACOS(LEAST(1.0, COS(RADIANS(s.stop_lat))
                                         * COS(RADIANS(${lat}))
@@ -32,7 +32,7 @@ const listNearestStopsFromCurrLocation = (lat, long) => {
                                         + SIN(RADIANS(s.stop_lat))
                                         * SIN(RADIANS(${lat}))))) AS distance_in_km
                                 FROM stops s JOIN patronage p ON s.stop_id = p.stop_patronage_id
-                                JOIN (SELECT s.stop_id, s.stop_name, COALESCE(COUNT(*),0) AS total_police_station FROM stops s
+                                JOIN (SELECT s.stop_id, s.stop_name, COALESCE(COUNT(*),0) AS total_police_station, COALESCE(s.crime_rate_index,0) AS crime_rate_index FROM stops s
                                 LEFT JOIN police_stop ps ON s.stop_id = ps.stopid
                                 GROUP BY s.stop_name) T1 ON T1.stop_id = s.stop_id
                                 WHERE p.year = 2020
@@ -112,7 +112,43 @@ const listCarriagesByDayRouteStopDepartureTime = (day, routeId, stopId, departur
                                 LEFT JOIN
                                 (SELECT carriage_number, ROUND(AVG(crowdness_level),2) AS average_crowdness_level FROM crowdedness
                                 WHERE day = '${day}' AND crowd_route_id = '${routeId}' AND crowd_stop_id = ${stopId} AND departure_time = '${departureTime}'
-                                GROUP BY carriage_number) T2 ON T1.carriage_number = T2.carriage_number;`)
+                                GROUP BY carriage_number) T2 ON T1.carriage_number = T2.carriage_number
+                                ORDER BY average_crowdness_level ASC;`)
+}
+
+const listDistinctRoutesForFilter = (stopId, directionId, lat, long) => {
+    return mysqlService.execute(`SELECT DISTINCT T3.route_id, T3.route_long_name FROM
+    ( SELECT DISTINCT s.stop_id, r.route_id, r.route_long_name, tr.trip_headsign, st.departure_time
+    FROM stop_times st JOIN trips tr ON st.trip_id = tr.trip_id
+    JOIN stops s  ON s.stop_id = st.stop_id
+    JOIN routes r ON tr.route_id = r.route_id
+    WHERE r.route_id IN (SELECT DISTINCT T1.route_id FROM 
+    (SELECT route_id, route_long_name, RANK() OVER (PARTITION BY route_short_name ORDER BY route_id ASC) route_rank
+    FROM routes) T1 WHERE T1.route_rank = 1
+    ORDER BY T1.route_id) 
+    AND s.stop_id = ${stopId}
+    AND tr.direction_id = ${directionId}
+    AND departure_time < '23:00:00'
+    ORDER BY r.route_id, r.route_long_name, s.stop_name, st.arrival_time, st.departure_time ) T3
+    JOIN
+    (SELECT DISTINCT r.route_id, r.route_long_name
+    FROM routes r JOIN trips tr ON r.route_id = tr.route_id
+    JOIN stop_times st ON st.trip_id = tr.trip_id
+    JOIN stops s ON s.stop_id = st.stop_id
+    WHERE r.route_id  IN (SELECT DISTINCT T1.route_id FROM 
+    (SELECT route_id, route_short_name, RANK() OVER (PARTITION BY route_short_name ORDER BY route_id ASC) route_rank
+    FROM routes) T1 WHERE T1.route_rank = 1
+    ORDER BY T1.route_id) AND tr.direction_id = ${directionId} AND s.stop_id IN (SELECT T2.stop_id FROM
+    (SELECT T1.stop_id, T1.stop_name, T1.stop_lat, T1.stop_lon, T1.distance_in_km, RANK() OVER (ORDER BY T1.distance_in_km) AS ranking FROM
+    (SELECT stop_id, stop_name, stop_lat, stop_lon,
+    111.111 *
+        DEGREES(ACOS(LEAST(1.0, COS(RADIANS(stop_lat))
+            * COS(RADIANS(${lat}))
+            * COS(RADIANS(stop_lon - ${long}))
+            + SIN(RADIANS(stop_lat))
+            * SIN(RADIANS(${lat}))))) AS distance_in_km          
+    FROM stops) T1) T2
+    WHERE T2.ranking = 1)) T4 ON T3.route_id = T4.route_id;`)
 }
 
 const listCriminalActivitiesForEachCarriage = (carriageNumber, day, routeId, stopId, departureTime) => {
@@ -161,6 +197,7 @@ module.exports = {
     listAllTripWishlist,
     listCriminalActivitiesForEachCarriage,
     listAllPaxForEachStopId,
+    listDistinctRoutesForFilter,
     getRecentStopRankBasedOnStopId,
     reportCrowdedness,
     addTripWishlist,
